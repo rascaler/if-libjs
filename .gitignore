@@ -1,0 +1,9 @@
+/node_modules
+/.idea
+/website
+/lib
+/dist
+/types
+
+/package-lock.json
+/coverage
