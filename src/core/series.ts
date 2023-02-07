@@ -1,100 +1,198 @@
 export interface Series {
-    data?: number|number[]
-    isArray?: boolean
+    data: number|number[]
+    dtype: string
+    length: number
+    isArray: boolean
+    getElement(index: number) : any
     // 加
-    add: (other: Series) => NonNullable<Series>
+    add: (operand: Series) => Series
     // 减
-    sub : (other: Series) => NonNullable<Series>
+    sub : (operand: Series) => Series
     // 乘
-    mul : (other: Series) => NonNullable<Series>
+    mul : (operand: Series) => Series
     // 除
-    div : (other: Series) => NonNullable<Series>
+    div : (operand: Series) => Series
     // 逻辑与
-    and : (other: Series) => NonNullable<Series>
+    and : (operand: Series) => Series
     // 逻辑或
-    or : (other: Series) => NonNullable<Series>
+    or : (operand: Series) => Series
     // 逻辑非
-    not : () => NonNullable<Series>
+    not : () => Series
     // 大于
-    gt : (other: Series) => NonNullable<Series>
+    gt : (operand: Series) => Series
     // 小于
-    lt : (other: Series) => NonNullable<Series>
+    lt : (operand: Series) => Series
     // 等于
-    eq : (other: Series) => NonNullable<Series>
+    eq : (operand: Series) => Series
     // 不等于
-    ne : (other: Series) => NonNullable<Series>
+    ne : (operand: Series) => Series
     // 大于等于
-    ge : (other: Series) => NonNullable<Series>
+    ge : (operand: Series) => Series
     // 小于等于
-    le : (other: Series) => NonNullable<Series>
+    le : (operand: Series) => Series
 }
 
 export abstract class AbstractSeries implements Series{
-    data?: number | number[] | undefined
-    isArray?: boolean
-    constructor(data?: number|number[]) {
+    data: number|number[]
+    dtype: string
+    length: number
+    isArray: boolean
+    constructor(data: number|number[]) {
         this.data = data
-   }
-    add: (other: Series) => Series
-    sub: (other: Series) => Series
-    mul: (other: Series) => Series
-    div: (other: Series) => Series
-    and: (other: Series) => Series
-    or: (other: Series) => Series
+    }
+    getElement: (index: number) => any
+    add: (operand: Series) => Series
+    sub: (operand: Series) => Series
+    mul: (operand: Series) => Series
+    div: (operand: Series) => Series
+    and: (operand: Series) => Series
+    or: (operand: Series) => Series
     not: () => Series
-    gt: (other: Series) => Series
-    lt: (other: Series) => Series
-    eq: (other: Series) => Series
-    ne: (other: Series) => Series
-    ge: (other: Series) => Series
-    le: (other: Series) => Series
-    
+    gt: (operand: Series) => Series
+    lt: (operand: Series) => Series
+    eq: (operand: Series) => Series
+    ne: (operand: Series) => Series
+    ge: (operand: Series) => Series
+    le: (operand: Series) => Series
+    private operate(operand: Series, operator: string): NumberSeries {
+        if (!this.isArray && !operand.isArray) {
+            return new NumberSeries(this.data as any  + (operand.data as any))
+        }
+        const maxLength = this.length > operand.length ? this.length : operand.length
+        const newArr: any[] = []
+        for (let i =0; i < maxLength; i++) {
+            switch(operator) {
+                case "add": newArr.push(this.getElement(i) + operand.getElement(i));break;
+                case "sub": newArr.push(this.getElement(i) - operand.getElement(i));break;
+                case "mul": newArr.push(this.getElement(i) * operand.getElement(i));break;
+                case "div": newArr.push(this.getElement(i) / operand.getElement(i));break;
+                // case "and": newArr.push(this.getElement(i) & operand.getElement(i));break;
+                // case "or": newArr.push(this.getElement(i) | operand.getElement(i));break;
+                // case "gt": newArr.push(this.getElement(i) > operand.getElement(i));break;
+                // case "lt": newArr.push(this.getElement(i) < operand.getElement(i));break;
+                // case "eq": newArr.push(this.getElement(i) == operand.getElement(i));break;
+                // case "ne": newArr.push(this.getElement(i) != operand.getElement(i));break;
+                // case "ge": newArr.push(this.getElement(i) >= operand.getElement(i));break;
+                // case "le": newArr.push(this.getElement(i) <= operand.getElement(i));break;
+                default: throw new Error("未知运算符");
+            }
+            
+        }
+        return new NumberSeries(newArr); 
+    }
 }
 
 export class NumberSeries implements Series{
     // 数据
-    data?: number|number[]
+    data: number|number[]
     // 数据类型
-    dt: string = "number"
-    isArray?: boolean
-    constructor(data?: number|number[]) {
+    dtype: string = "number"
+    length: number
+    isArray: boolean
+    constructor(data: number|number[]) {
          this.data = data
-         this.isArray = Array.isArray(data) ? true : false
+         this.isArray = Array.isArray(data)
+         this.length = this.isArray ? (this.data as number[]).length : 1
     }
 
-    get(index?: number) : number{
-        // @ts-expect-error
+    getElement(index: number) : number{
         return Array.isArray(this.data) ? this.data[index] : this.data
     }
 
-    add(other: Series):NonNullable<NumberSeries> {
-        return new NumberSeries(); 
+    add(operand: Series): NumberSeries {
+        return this.operate(operand, (left, right) => {
+            return left + right;
+        })
     } 
         
-    sub: (other: Series) => Series 
+    sub(operand: Series): NumberSeries {
+        return this.operate(operand, (left, right) => {
+            return left - right;
+        })
+    }
         
-    mul: (other: Series) => Series // 加
+    mul(operand: Series): NumberSeries {
+        return this.operate(operand, (left, right) => {
+            return left * right;
+        })
+    }
         
-    div: (other: Series) => Series // 加
+    div(operand: Series): NumberSeries {
+        return this.operate(operand, (left, right) => {
+            return left / right;
+        })
+    }
         
-    and: (other: Series) => Series // 加
+    and(operand: Series): NumberSeries {
+        return this.operate(operand, (left, right) => {
+            return left && right;
+        })
+    }
         
-    or: (other: Series) => Series // 加
+    or(operand: Series): NumberSeries {
+        return this.operate(operand, (left, right) => {
+            return left || right;
+        })
+    }
         
-    not: () => Series
+    not(): NumberSeries {
+        if (!this.isArray) {
+            return new NumberSeries(Number(!!this.data))
+        } else {
+            const newArr: any[] = [];
+            (this.data as number[]).forEach(d => {
+                newArr.push(Number(!d))
+            })
+            return new NumberSeries(newArr)
+        }
+    }
 
-    gt: (other: Series) => Series // 加
+    gt(operand: Series): NumberSeries {
+        return this.operate(operand, (left, right) => {
+            return Number(left > right);
+        })
+    }
         
-    lt: (other: Series) => Series // 加
+    lt(operand: Series): NumberSeries {
+        return this.operate(operand, (left, right) => {
+            return Number(left < right);
+        })
+    }
         
-    eq: (other: Series) => Series // 加
-        
-    ne: (other: Series) => Series // 加
-        
-    ge: (other: Series) => Series // 加
-        
-    le: (other: Series) => Series // 加
-        
+    eq(operand: Series): NumberSeries {
+        return this.operate(operand, (left, right) => {
+            return Number(left == right);
+        })
+    }
 
+    ne(operand: Series): NumberSeries {
+        return this.operate(operand, (left, right) => {
+            return Number(left == right);
+        })
+    }
+        
+    ge(operand: Series): NumberSeries {
+        return this.operate(operand, (left, right) => {
+            return Number(left >= right);
+        })
+    }
+        
+    le(operand: Series): NumberSeries {
+        return this.operate(operand, (left, right) => {
+            return Number(left <= right);
+        })
+    }   
+
+    private operate(operand: Series, calculate: (left: any, right: any) => any): NumberSeries {
+        if (!this.isArray && !operand.isArray) {
+            return new NumberSeries(this.data as any  + (operand.data as any))
+        }
+        const maxLength = this.length > operand.length ? this.length : operand.length
+        const newArr: any[] = []
+        for (let i =0; i < maxLength; i++) {
+            newArr.push(calculate(this.getElement(i), operand.getElement(i)))
+        }
+        return new NumberSeries(newArr); 
+    }
 }
 
