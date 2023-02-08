@@ -57,14 +57,16 @@ import {describe, expect, test} from '@jest/globals';
 import { parse,parseExpression } from "@babel/parser";
 import traverse from "@babel/traverse";
 import generate from "@babel/generator";
+import * as t from "@babel/types";
 
 
 test('sentence', () => {
-    const ast = parse(`M = ((AA || BB)) && CC`, { errorRecovery: true });
+    const ast = parse(`M = AA || BB && CC`, { errorRecovery: true });
     const output = generate(ast);
     traverse(ast, {
         LogicalExpression(path) {
             console.log(path)
+            path.node.left
         }
       });
 });
