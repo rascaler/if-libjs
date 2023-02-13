@@ -52,7 +52,12 @@ class SentenceParser {
         exprBody = exprBody.replace(' OR ', ' || ')
         //使用语法树为比较运算添加括号，提高优先级 & |的运算符优先级大于逻辑运算符and or
         //先使用都替换成or或者and让运算优先级保持平级
-        const ast = parse(`M = AA || BB） && CC`, { errorRecovery: true, createParenthesizedExpressions: true });
+        const ast = parse(exprBody, { errorRecovery: true, createParenthesizedExpressions: true });
+        traverse(ast, {
+            LogicalExpression(path) {
+                
+            }
+        })
 
         // 如果variable为空，需要为其生成一个变量
     }
