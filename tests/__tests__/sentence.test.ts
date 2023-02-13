@@ -61,7 +61,7 @@ import * as t from "@babel/types";
 
 
 test('sentence', () => {
-    const ast = parse(`M = AA || BB && CC`, { errorRecovery: true });
+    const ast = parse(`M = AA || BB） && CC`, { errorRecovery: true });
     const output = generate(ast);
     traverse(ast, {
         LogicalExpression(path) {

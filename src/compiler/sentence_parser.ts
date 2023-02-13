@@ -1,4 +1,8 @@
 
+import { parse,parseExpression } from "@babel/parser";
+import traverse from "@babel/traverse";
+import generate from "@babel/generator";
+
 enum SentenceType {
     // 绘图
     DRAWING = "drawing",
@@ -31,18 +35,27 @@ class SentenceParser {
 
     toBody(sourceBody: string) {
         // 先将=替换成==，tdx中的=为比较公式，python中的=为赋值公式
-        const pattern = /:=|==|>=|<=|=/
-        let exprBody = sourceBody.replace(/:=|==|>=|<=|=/g, (matched: string) => {
-            return matched == "=" ? "==":matched
+        // const pattern = /:=|:/
+        const bodyArr = sourceBody.split(/:=|:/)
+        const variable = bodyArr.length > 1 ? bodyArr[0] : ""
+        let exprBody = bodyArr.length > 1 ? bodyArr[1] : bodyArr[0]
+        exprBody = sourceBody.replace(/==|<>|>=|<=|=/g, (matched: string) => {
+            switch(matched) {
+                case "<>" : return "!=";
+                case "=": return "==";
+                default: return matched;
+            }
         })
-
-        //  将通达信中<>转换为 !=
-        exprBody = exprBody.replace('<>', '!=')
+        
         // 先将比较公式转换成js语法，and or 大写转小写,将 && 转为 and, || 转为 or
         exprBody = exprBody.replace(' AND ', ' && ')
         exprBody = exprBody.replace(' OR ', ' || ')
         //使用语法树为比较运算添加括号，提高优先级 & |的运算符优先级大于逻辑运算符and or
         //先使用都替换成or或者and让运算优先级保持平级
+        const ast = parse(`M = AA || BB） && CC`, { errorRecovery: true, createParenthesizedExpressions: true });
+
+        // 如果variable为空，需要为其生成一个变量
     }
+
 }
     
