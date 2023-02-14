@@ -61,12 +61,20 @@ import * as t from "@babel/types";
 
 
 test('sentence', () => {
-    const ast = parse(`M = AA || BB） && CC`, { errorRecovery: true });
-    const output = generate(ast);
+    const ast = parse(`D = ((C + D || M) || U && (T || P)) && CROSS(Y > R || W && Q) || E || F+G&&((H > 2) || I || J);`, { errorRecovery: true, createParenthesizedExpressions: true });
     traverse(ast, {
         LogicalExpression(path) {
-            console.log(path)
-            path.node.left
+            // console.log(path)
+            // path.node.left
+            if (path.node.operator == '||') {
+                // 如果右边也是逻辑运算
+                if (path.node.right.type == "LogicalExpression") {
+                    path.node.left = t.logicalExpression("||", path.node.left, path.node.right.left)
+                    path.node.operator = path.node.right.operator
+                    path.node.right = path.node.right.right
+                }
+            }
         }
-      });
+    });
+    const output = generate(ast);
 });
