@@ -70,6 +70,7 @@ class SentenceParser {
             }
         });
 
+
         // 如果variable为空，需要为其生成一个变量
         return {variable: variable, exprBody: generate(ast).code}
     }
@@ -90,7 +91,7 @@ class SentenceParser {
             return
         }
 
-        // 绘图
+        // 绘图 : 或者没有变量的都是赋值
         this.type = SentenceType.DRAWING
         this.parsedCode = this.varName + "=" + this.exprBody
         return this.parsedCode

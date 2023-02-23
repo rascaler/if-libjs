@@ -58,14 +58,23 @@ import { parse,parseExpression } from "@babel/parser";
 import traverse from "@babel/traverse";
 import generate from "@babel/generator";
 import * as t from "@babel/types";
+import {NumberSeries} from "../../src/core/series"
+
+function INITCONST(val):NumberSeries {
+    // return parseExpression(`new NumberSeries(1)`)
+    return new NumberSeries(val)
+}
 
 
-test('sentence', () => {
-    const ast = parse(`D = ((C + D || M) || U && (T || P)) && CROSS(Y > R || W && Q) || E || F+G&&((H > 2) || I || J);`, { errorRecovery: true, createParenthesizedExpressions: true });
+test('ast', () => {
+    const numberNode = parseExpression('INITCONST(1)')
+    
+    const binaryNode = parseExpression('1+cross(2+3)')
+    const ast = parse(`D = ((C + D || M) || U && (T || P)) && CROSS(Y > R || W && Q) || E || 2/F+G*3&&((H > 2) || I || J) && M(1);`, { errorRecovery: true, createParenthesizedExpressions: true });
+    // D = ((C.add(D).or(M)).or(U).and((T.or(P)))).and(CROSS(Y.gt(R).or(W).and(Q))).or(E).or(INITCONST(2).div(F).add(G.mul(INITCONST(3)))).and(((H.gt(INITCONST(2))).or(I).or(J))).and(M(INITCONST(1)));
+    // const ast = parse(`1+cross(2+3)`, { errorRecovery: true, createParenthesizedExpressions: true });
     traverse(ast, {
         LogicalExpression(path) {
-            // console.log(path)
-            // path.node.left
             if (path.node.operator == '||') {
                 // 如果右边也是逻辑运算
                 if (path.node.right.type == "LogicalExpression") {
@@ -74,7 +83,84 @@ test('sentence', () => {
                     path.node.right = path.node.right.right
                 }
             }
-        }
+            let operator = "";
+           switch(path.node.operator) {
+            case "&&": operator = "and";break;
+            case "||": operator = "or";break;
+           }
+           // 参数
+           const args = [path.node.right]
+           const mem = t.memberExpression(path.node.left as t.Expression, t.identifier(`${operator}`), false)
+           const callExpr = t.callExpression(mem, args)
+           path.replaceWith(callExpr)
+        },
+        NumericLiteral(path) {
+            const args = [t.numericLiteral(path.node.value)]
+            const callExpr = t.callExpression(t.identifier('INITCONST'), args)
+            // path.replaceWith(parseExpression(`INITCONST(${path.node.value})`))
+            path.replaceWith(callExpr)
+            path.skip()
+        },
+        BinaryExpression(path) {
+            let operator = "";
+            switch(path.node.operator) {
+             case "+": operator = "add";break;
+             case "-": operator = "sub";break;
+             case "*": operator = "mul";break;
+             case "/": operator = "div";break;
+             case ">": operator = "gt";break;
+             case ">=": operator = "ge";break;
+             case "<": operator = "lt";break;
+             case "<=": operator = "le";break;
+             case "==": operator = "eq";break;
+            }
+            // 参数
+            const args = [path.node.right]
+            const mem = t.memberExpression(path.node.left as t.Expression, t.identifier(`${operator}`), false)
+            const callExpr = t.callExpression(mem, args)
+            path.replaceWith(callExpr)
+         }
     });
+
+    // 加减乘除和逻辑运算包装
+    // traverse(ast, {
+    //     LogicalExpression(path) {
+    //        let operator = "";
+    //        switch(path.node.operator) {
+    //         case "&&": operator = "and";break;
+    //         case "||": operator = "or";break;
+    //        }
+    //        // 参数
+    //        const args = [path.node.right]
+    //        const mem = t.memberExpression(path.node.left as t.Expression, t.identifier(`${operator}`), false)
+    //        const callExpr = t.callExpression(mem, args)
+    //        path.replaceWith(callExpr)
+            
+    //     },
+    //     BinaryExpression(path) {
+    //        let operator = "";
+    //        switch(path.node.operator) {
+    //         case "+": operator = "add";break;
+    //         case "-": operator = "sub";break;
+    //         case "*": operator = "mul";break;
+    //         case "/": operator = "div";break;
+    //         case ">": operator = "gt";break;
+    //         case ">=": operator = "ge";break;
+    //         case "<": operator = "lt";break;
+    //         case "<=": operator = "le";break;
+    //         case "==": operator = "eq";break;
+    //        }
+    //        // 参数
+    //        const args = [path.node.right]
+    //        const mem = t.memberExpression(path.node.left as t.Expression, t.identifier(`${operator}`), false)
+    //        const callExpr = t.callExpression(mem, args)
+    //        path.replaceWith(callExpr)
+    //     }
+    // });
     const output = generate(ast);
+    console.log(output)
+    // 括号优化
+    // const ast2 = parse(output.code, { errorRecovery: true});
+    // const output2 = generate(ast2);
+    // console.log(output2)
 });
