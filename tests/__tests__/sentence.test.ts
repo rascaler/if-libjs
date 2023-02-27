@@ -70,10 +70,17 @@ test('ast', () => {
     const numberNode = parseExpression('INITCONST(1)')
     
     const binaryNode = parseExpression('1+cross(2+3)')
-    const ast = parse(`D = ((C + D || M) || U && (T || P)) && CROSS(Y > R || W && Q) || E || 2/F+G*3&&((H > 2) || I || J) && M(1);`, { errorRecovery: true, createParenthesizedExpressions: true });
+    // const ast = parse(`D = ((C + D || M) || U && (T || P)) && CROSS(Y > R || W && Q) || E || 2/F+G*3&&((H > 2) || I || J) && M(1);`, { errorRecovery: true, createParenthesizedExpressions: true });
+    const ast = parse(`MA(5),COLORFFFFFF,LINETHICK2`, { errorRecovery: true, createParenthesizedExpressions: true });
     // D = ((C.add(D).or(M)).or(U).and((T.or(P)))).and(CROSS(Y.gt(R).or(W).and(Q))).or(E).or(INITCONST(2).div(F).add(G.mul(INITCONST(3)))).and(((H.gt(INITCONST(2))).or(I).or(J))).and(M(INITCONST(1)));
     // const ast = parse(`1+cross(2+3)`, { errorRecovery: true, createParenthesizedExpressions: true });
     traverse(ast, {
+        SequenceExpression (path) {
+            path.node.expressions.forEach(e => {
+                console.log(generate(e).code)
+                console.log(1111)
+            })
+          },
         LogicalExpression(path) {
             if (path.node.operator == '||') {
                 // 如果右边也是逻辑运算

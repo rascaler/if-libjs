@@ -1,26 +1,96 @@
-class FormulaBuffer:
-    def __init__(self, data=''):
-        self.length = len(data)
-        self.data = data
-        # 上一个操作符
-        self.preOperator = ''
-        # 当前操作符
-        self.operator = ''
+import { CompilerContext } from './compiler_context'
+import { SentenceParser } from './sentence_parser'
 
-    def append(self, val):
-        if not val:
-            raise Exception("val不能为空")
-        self.data += val
-        self.length += len(val)
-        return self
+export class ModifierParser {
+  expression: string
+  sentenceParser: SentenceParser
+  context: CompilerContext
+  constructor (expression: string, sentenceParser: SentenceParser, context: CompilerContext) {
+    this.expression = expression
+    this.sentenceParser = sentenceParser
+    this.context = context
+  }
+}
 
-    def insert(self, position, val):
-        if val is None or position is None:
-            raise Exception("position和val不能为空")
-        if position >= self.length:
-            self.data += val
-            self.length += len(val)
-        if position == 0:
-            self.data = val + self.data
-            self.length += len(val)
-        return self
+class CircleDotParser extends ModifierParser {
+
+}
+
+class ColorParser extends ModifierParser {
+
+}
+
+class ColorStickParser extends ModifierParser {
+
+}
+
+class CrossDotParser extends ModifierParser {
+
+}
+
+class DotLineParser extends ModifierParser {
+
+}
+
+class DrawAboveParser extends ModifierParser {
+
+}
+
+class LineStickParser extends ModifierParser {
+
+}
+
+class LineThickParser extends ModifierParser {
+
+}
+
+class MoveParser extends ModifierParser {
+
+}
+
+class MoverParser extends ModifierParser {
+
+}
+
+class NoDrawParser extends ModifierParser {
+
+}
+
+class NoFrameParser extends ModifierParser {
+
+}
+
+class NoTextParser extends ModifierParser {
+
+}
+
+class PointDotParser extends ModifierParser {
+
+}
+
+class StickParser extends ModifierParser {
+
+}
+
+class VolStickParser extends ModifierParser {
+
+}
+
+export const MODIFIER_PARSER_MAPPING = new Map([
+  ['CIRCLEDOT', CircleDotParser],
+  ['COLOR', ColorParser],
+  ['COLORSTICK', ColorStickParser],
+  ['CROSSDOT', CrossDotParser],
+  ['DOTLINE', DotLineParser],
+  ['DRAWABOVE', DrawAboveParser],
+  ['LINESTICK', LineStickParser],
+  ['LINETHICK', LineThickParser],
+  ['MOVE', MoveParser],
+  ['MOVER', MoverParser],
+  ['NODRAW', NoDrawParser],
+  ['NOFRAME', NoFrameParser],
+  ['NOTEXT', NoTextParser],
+  ['POINTDOT', PointDotParser],
+  ['STICK', StickParser],
+  ['VOLSTICK', VolStickParser]
+])
